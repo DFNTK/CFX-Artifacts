@@ -1,5 +1,5 @@
 [package]
-name = "df_artifacts"
+name = "cfx_artifacts"
 version = "1.0.0"
 edition = "2021"
 

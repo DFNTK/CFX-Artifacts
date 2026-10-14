@@ -15,7 +15,8 @@ use tauri::{AppHandle, Emitter};
 use tokio::io::AsyncWriteExt;
 
 const API: &str = "https://artifacts.jgscripts.com";
-const VERSION_FILE: &str = "df_version.xml";
+const VERSION_FILE: &str = "cfx_version.xml";
+const LEGACY_VERSION_FILE: &str = "df_version.xml";
 const BACKUPS_DIR: &str = "artifacts_backups";
 const DATA_DIR: &str = "cfx_artifacts_data";
 const TASK_DAILY: &str = "CFX Artifacts - Comprobar diario";
@@ -185,7 +186,7 @@ fn locate() -> Result<(PathBuf, PathBuf), String> {
             .map(|a| (b.clone(), a))
             .ok_or_else(|| "E_BASE_NO_ARTIFACTS".to_string());
     }
-    if let Ok(b) = std::env::var("DF_BASE") {
+    if let Ok(b) = std::env::var("CFX_BASE").or_else(|_| std::env::var("DF_BASE")) {
         let b = PathBuf::from(b);
         if let Some(a) = artifacts_in(&b) {
             return Ok((b, a));
@@ -246,7 +247,9 @@ fn move_dir(src: &Path, dst: &Path) -> Result<(), String> {
 }
 
 fn read_version(art: &Path) -> Option<String> {
-    let t = fs::read_to_string(art.join(VERSION_FILE)).ok()?;
+    let t = fs::read_to_string(art.join(VERSION_FILE))
+        .or_else(|_| fs::read_to_string(art.join(LEGACY_VERSION_FILE)))
+        .ok()?;
     let a = t.find("<version>")? + 9;
     let b = t[a..].find("</version>")? + a;
     let v = t[a..b].trim().to_string();

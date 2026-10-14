@@ -4,15 +4,15 @@ Herramienta de escritorio para Windows que actualiza la carpeta **artifacts** de
 
 ## Cómo funciona
 
-El ejecutable (`df_artifacts.exe`) escanea **la carpeta donde está** y sus subcarpetas (y, como último recurso, hasta 6 carpetas superiores) buscando un directorio que contenga `FXServer.exe` o `citizen/system_resources`. El nombre de la carpeta da igual; si hay varias, gana la llamada `artifacts`, `artifact`, `fxserver`, `fx-server` o `fivem`.
+El ejecutable (`cfx_artifacts.exe`) escanea **la carpeta donde está** y sus subcarpetas (y, como último recurso, hasta 6 carpetas superiores) buscando un directorio que contenga `FXServer.exe` o `citizen/system_resources`. El nombre de la carpeta da igual; si hay varias, gana la llamada `artifacts`, `artifact`, `fxserver`, `fx-server` o `fivem`.
 
 ```
 F:\servidor\
-├── df_artifacts.exe          <- el ejecutable
+├── cfx_artifacts.exe          <- el ejecutable
 ├── artifacts\                <- se detecta por contenido
 │   ├── FXServer.exe
 │   ├── citizen\system_resources\{chat,monitor,...}
-│   └── df_version.xml        <- lo crea la app (versión instalada)
+│   └── cfx_version.xml        <- lo crea la app (versión instalada; también lee el antiguo df_version.xml)
 ├── artifacts_backups\        <- backups (configurable)
 ├── cfx_artifacts_data\       <- ajustes e historial
 │   ├── settings.json
@@ -27,7 +27,7 @@ F:\servidor\
 3. Copia en la carpeta temporal las subcarpetas de `citizen/system_resources` que el usuario quiso conservar (por ejemplo `chat` y `monitor`).
 4. Si el servidor está en marcha lo para.
 5. Mueve la carpeta artifacts actual a un backup completo y copia la nueva versión.
-6. Escribe `df_version.xml`, aplica el límite de backups (borra el más antiguo) y registra la operación en el historial.
+6. Escribe `cfx_version.xml`, aplica el límite de backups (borra el más antiguo) y registra la operación en el historial.
 7. Reinicia el servidor si estaba en marcha (configurable).
 
 Si la copia falla, restaura el backup automáticamente.
@@ -45,8 +45,8 @@ Si la copia falla, restaura el backup automáticamente.
 ## Línea de comandos
 
 ```
-df_artifacts.exe --update [--keep chat,monitor] [--version N]
-df_artifacts.exe --check  [--keep chat,monitor] [--version N]
+cfx_artifacts.exe --update [--keep chat,monitor] [--version N]
+cfx_artifacts.exe --check  [--keep chat,monitor] [--version N]
 ```
 
 | Opción | Efecto |
@@ -56,7 +56,7 @@ df_artifacts.exe --check  [--keep chat,monitor] [--version N]
 | `--keep a,b` | Carpetas de `system_resources` a conservar. Por defecto, las guardadas en ajustes (`chat`, `monitor`). |
 | `--version N` | Build concreto en lugar del recomendado (debe estar en la lista de versiones disponibles). |
 
-La pestaña **Tareas** crea dos tareas programadas que ejecutan `df_artifacts.exe --check`:
+La pestaña **Tareas** crea dos tareas programadas que ejecutan `cfx_artifacts.exe --check`:
 
 - `CFX Artifacts - Comprobar diario`
 - `CFX Artifacts - Comprobar al iniciar sesion`
@@ -72,9 +72,9 @@ npm install
 npx tauri build --no-bundle
 ```
 
-El resultado queda en `src-tauri/target/release/df_artifacts.exe`. Para desarrollo: `npx tauri dev`.
+El resultado queda en `src-tauri/target/release/cfx_artifacts.exe`. Para desarrollo: `npx tauri dev`.
 
-Para probar fuera de la carpeta real, la variable de entorno `DF_BASE` fuerza la carpeta base que se escanea.
+Para probar fuera de la carpeta real, la variable de entorno `CFX_BASE` fuerza la carpeta base que se escanea.
 
 ## Estructura del proyecto
 

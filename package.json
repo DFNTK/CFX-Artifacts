@@ -1,1 +1,1 @@
-{"name":"df-artifacts","version":"1.0.0","private":true,"scripts":{"tauri":"tauri","build":"tauri build --no-bundle","dev":"tauri dev"},"devDependencies":{"@tauri-apps/cli":"^2"},"dependencies":{"lucide":"^1.56.0"}}
+{"name":"cfx-artifacts","version":"1.0.0","private":true,"scripts":{"tauri":"tauri","build":"tauri build --no-bundle","dev":"tauri dev"},"devDependencies":{"@tauri-apps/cli":"^2"},"dependencies":{"lucide":"^1.56.0"}}
