@@ -1,0 +1,30 @@
+# Dependencias
+node_modules/
+
+# Compilación de Rust / Tauri
+src-tauri/target/
+src-tauri/gen/
+*.exe
+*.pdb
+
+# Iconos móviles que genera `tauri icon` y la app no usa
+src-tauri/icons/android/
+src-tauri/icons/ios/
+
+# Datos locales de la app (si se ejecuta dentro del repo)
+artifacts/
+artifacts_backups/
+cfx_artifacts_data/
+txData/
+
+# Registros y temporales
+*.log
+npm-debug.log*
+*.tmp
+
+# Editor / sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
