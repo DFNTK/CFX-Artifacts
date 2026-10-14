@@ -15,6 +15,7 @@ use tauri::{AppHandle, Emitter};
 use tokio::io::AsyncWriteExt;
 
 const API: &str = "https://artifacts.jgscripts.com";
+const APP_VERSION_URL: &str = "https://raw.githubusercontent.com/DFNTK/CFX-Artifacts/main/version.md";
 const VERSION_FILE: &str = "cfx_version.xml";
 const LEGACY_VERSION_FILE: &str = "df_version.xml";
 const BACKUPS_DIR: &str = "artifacts_backups";
@@ -900,6 +901,62 @@ fn server_logs() -> Vec<String> {
 
 // ---- ajustes / historial ----
 
+#[derive(Serialize)]
+struct AppUpdate {
+    current: String,
+    latest: String,
+    release: String,
+    available: bool,
+}
+
+/// Lee `key = value` de version.md.
+fn parse_kv(text: &str, key: &str) -> Option<String> {
+    text.lines().find_map(|l| {
+        let l = l.trim();
+        let (k, v) = l.split_once('=')?;
+        (k.trim().eq_ignore_ascii_case(key)).then(|| v.trim().to_string())
+    })
+}
+
+/// Compara versiones tipo "1.0" / "1.0.2" rellenando con ceros.
+fn version_newer(latest: &str, current: &str) -> bool {
+    let parse = |s: &str| -> Vec<u64> { s.trim().trim_start_matches(['v', 'V']).split('.').map(|p| p.trim().parse().unwrap_or(0)).collect() };
+    let (a, b) = (parse(latest), parse(current));
+    for i in 0..a.len().max(b.len()) {
+        let (x, y) = (a.get(i).copied().unwrap_or(0), b.get(i).copied().unwrap_or(0));
+        if x != y {
+            return x > y;
+        }
+    }
+    false
+}
+
+#[tauri::command]
+async fn check_app_update() -> Result<AppUpdate, String> {
+    let current = env!("CARGO_PKG_VERSION").to_string();
+    let text = reqwest::get(APP_VERSION_URL)
+        .await
+        .map_err(|e| e.to_string())?
+        .text()
+        .await
+        .map_err(|e| e.to_string())?;
+    let latest = parse_kv(&text, "version").ok_or("E_BAD_VERSION")?;
+    let release = parse_kv(&text, "release").unwrap_or_default();
+    let available = version_newer(&latest, &current);
+    Ok(AppUpdate { current, latest, release, available })
+}
+
+#[tauri::command]
+fn open_url(url: String) -> Result<(), String> {
+    if !url.starts_with("https://") || url.contains(['"', ' ', '<', '>', '^', '&', '|']) {
+        return Err("E_BAD_URL".into());
+    }
+    let mut c = Command::new("rundll32");
+    c.args(["url.dll,FileProtocolHandler", &url]);
+    hide(&mut c);
+    c.spawn().map(|_| ()).map_err(|e| e.to_string())
+}
+
 #[tauri::command]
 fn open_txadmin() -> Result<(), String> {
     let (base, _) = locate()?;
@@ -1173,7 +1230,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             close_splash, get_info, list_versions, check_version, delete_backup, set_base,
             list_backups, update, restore, server_status, server_start, server_stop, server_logs,
-            open_txadmin, create_txadmin_shortcut, get_settings, save_settings, get_log, task_status, task_create, task_delete
+            check_app_update, open_url, open_txadmin, create_txadmin_shortcut, get_settings, save_settings, get_log, task_status, task_create, task_delete
         ])
         .run(tauri::generate_context!())
         .expect("error al iniciar la app");

@@ -393,6 +393,23 @@ async function setLanguage(code, persist) {
     $('path').textContent = lastInfo && lastInfo.error ? terr(lastInfo.error) : t('searching');
   }
   $('bkTitle').textContent = t('bk_title', settings ? settings.max_backups : 5);
+  renderAppUpdate();
+}
+
+// ---------- aviso de nueva version de la propia app ----------
+let appUpdate = null;
+function renderAppUpdate() {
+  if (!appUpdate) return;
+  $('appVer').textContent = 'v' + appUpdate.current;
+  $('appUpdate').hidden = !appUpdate.available;
+  if (appUpdate.available) $('appUpdateText').textContent = t('app_update', appUpdate.latest, appUpdate.current);
+}
+$('appUpdateBtn').onclick = async () => {
+  if (!appUpdate || !appUpdate.release) return;
+  try { await invoke('open_url', { url: appUpdate.release }); } catch (e) { $('appUpdateText').textContent = terr(e); }
+};
+async function checkAppUpdate() {
+  try { appUpdate = await invoke('check_app_update'); renderAppUpdate(); icons(); } catch (e) { /* sin red: se ignora */ }
 }
 
 // ---------- arranque + splash ----------
@@ -406,6 +423,7 @@ const splashStart = Date.now();
     settings = await invoke('get_settings');
     if (settings.lang && settings.lang !== LANG) { applyLang(settings.lang); renderLangs(); }
   } catch (e) { /* sin carpeta: idioma por defecto */ }
+  checkAppUpdate();
   await refresh();
   await loadSettings().catch(() => {});
   await pollServer();

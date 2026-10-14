@@ -104,6 +104,17 @@ icon-src.png             Icono original de la app
 
 Los comandos de Rust devuelven errores como códigos (`E_DOWNLOAD|detalle`, `E_NO_ARTIFACTS`...). La interfaz los traduce con `terr()` usando las claves `e_*` de `i18n.js`. Los códigos desconocidos se muestran sin traducir.
 
+## Aviso de nueva versión de la app
+
+Al arrancar, la app lee `version.md` de la rama `main` de este repositorio y lo compara con su propia versión (`version` de `src-tauri/Cargo.toml`). Si la del repositorio es mayor, muestra un aviso con un botón que abre la URL de `release`.
+
+```
+version = 1.0
+release = https://github.com/DFNTK/CFX-Artifacts/releases/latest
+```
+
+Para publicar una actualización: sube la versión en `src-tauri/Cargo.toml` y `src-tauri/tauri.conf.json`, compila, crea la release en GitHub y actualiza `version.md` con el nuevo número y la URL de esa release. Los usuarios con una versión anterior verán el aviso (`1.0` y `1.0.0` se consideran iguales).
+
 ## Servicios externos
 
-Solo se contacta con `artifacts.jgscripts.com`, `changelogs-live.fivem.net` y `runtime.fivem.net`.
+Solo se contacta con `artifacts.jgscripts.com`, `changelogs-live.fivem.net`, `runtime.fivem.net` y `raw.githubusercontent.com` (para `version.md`).

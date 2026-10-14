@@ -53,8 +53,14 @@
 </style>
 </head>
 <body>
-  <h1><img src="logo.png" alt=""> CFX <span>Artifacts</span></h1>
+  <h1><img src="logo.png" alt=""> CFX <span>Artifacts</span> <small id="appVer" style="font-size:11px;color:var(--mut);font-weight:400;letter-spacing:0"></small></h1>
   <div class="sub" id="path">...</div>
+  <div class="card" id="appUpdate" hidden style="border-color:var(--acc)">
+    <div class="row">
+      <span><i data-lucide="sparkles" style="vertical-align:-3px;color:var(--acc)"></i> <b id="appUpdateText"></b></span>
+      <button id="appUpdateBtn" class="sec"><i data-lucide="external-link"></i><span data-i18n="app_update_btn"></span></button>
+    </div>
+  </div>
 
   <div class="card" id="locate" hidden>
     <h2><i data-lucide="folder-search"></i><span data-i18n="locate_title"></span></h2>
