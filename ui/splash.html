@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>CFX Artifacts</title>
+<style>
+  html, body { margin:0; height:100%; overflow:hidden; background:#202020; color:#f2f2f2; font:13px "Segoe UI",system-ui,sans-serif; user-select:none; cursor:default; }
+  body { display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; }
+  img { width:150px; height:150px; border-radius:28px; animation:pulse 2.2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity:.82; transform:scale(1); } 50% { opacity:1; transform:scale(1.04); } }
+  .title { position:absolute; left:34px; bottom:92px; font-weight:700; letter-spacing:.05em; font-size:14px; color:#b4b4b4; text-transform:uppercase; }
+  .sub { position:absolute; left:34px; bottom:62px; font-weight:600; font-size:11px; color:#8a8a8a; }
+  .dots { position:absolute; right:34px; bottom:96px; display:flex; gap:7px; }
+  .dots i { width:5px; height:5px; border-radius:50%; background:#67b346; opacity:.25; animation:blink 1.2s infinite; }
+  .dots i:nth-child(2) { animation-delay:.15s } .dots i:nth-child(3) { animation-delay:.3s } .dots i:nth-child(4) { animation-delay:.45s }
+  @keyframes blink { 0%,100% { opacity:.25 } 50% { opacity:1 } }
+  .bar { position:absolute; left:34px; right:34px; bottom:34px; height:6px; background:#0c0c0c; border-radius:99px; overflow:hidden; }
+  .bar i { display:block; height:100%; width:0; background:#67b346; border-radius:99px; animation:load 2.4s ease-out forwards; }
+  @keyframes load { to { width:100%; } }
+</style>
+</head>
+<body data-tauri-drag-region>
+  <img src="logo.png" alt="">
+  <div class="title">CFX Artifacts</div>
+  <div class="sub">Starting...</div>
+  <div class="dots"><i></i><i></i><i></i><i></i></div>
+  <div class="bar"><i></i></div>
+</body>
+</html>

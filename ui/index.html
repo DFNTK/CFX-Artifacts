@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CFX Artifacts</title>
+<style>
+  :root { --bg:#202020; --card:#171717; --line:#2c2c2c; --fg:#f2f2f2; --mut:#9a9a9a; --acc:#67b346; --ok:#67b346; --bad:#e5534b; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:22px 26px; background:var(--bg); color:var(--fg); font:13px/1.45 "Segoe UI",system-ui,sans-serif; }
+  h1 { margin:0 0 2px; font-size:20px; letter-spacing:.04em; text-transform:uppercase; display:flex; align-items:center; gap:10px; } h1 span { color:var(--acc); }
+  h1 img { width:26px; height:26px; border-radius:6px; }
+  .sub { color:var(--mut); font-size:12px; word-break:break-all; margin-bottom:14px; }
+  svg.lucide { width:15px; height:15px; flex:none; }
+  .tabs { display:flex; gap:2px; margin-bottom:14px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  .tab { display:inline-flex; align-items:center; gap:6px; background:none; border:0; border-bottom:2px solid transparent; border-radius:0; padding:8px 12px; color:var(--mut); font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
+  .tab.on { color:var(--fg); border-bottom-color:var(--acc); }
+  .pane[hidden] { display:none; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:6px; padding:14px 16px; margin-bottom:12px; }
+  .card h2 { display:flex; align-items:center; gap:8px; margin:0 0 10px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--mut); }
+  .row { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:4px 0; }
+  .row b { font-weight:600; }
+  .badge { padding:1px 8px; border-radius:3px; font-size:11px; font-weight:700; letter-spacing:.05em; }
+  .ok { background:#1f3a14; color:#8fd36b; } .bad { background:#4a1d1a; color:#f0928c; } .warn { background:#4a3a14; color:#e6c15a; }
+  label.chk { display:flex; align-items:center; gap:8px; padding:5px 0; cursor:pointer; }
+  label.chk small { color:var(--mut); }
+  input[type=checkbox] { accent-color:var(--acc); width:16px; height:16px; }
+  button { display:inline-flex; align-items:center; justify-content:center; gap:7px; background:transparent; color:var(--fg); border:1px solid #5a5a5a; border-radius:99px; padding:9px 22px; font:600 13px "Segoe UI",system-ui,sans-serif; letter-spacing:.04em; cursor:pointer; transition:all .15s; }
+  button:hover:not(:disabled) { border-color:var(--acc); color:var(--acc); }
+  button:disabled { opacity:.4; cursor:not-allowed; }
+  button.sec { padding:4px 14px; font-size:12px; }
+  button.tab:hover:not(:disabled) { border-color:transparent; border-bottom-color:var(--acc); }
+  button.danger:hover:not(:disabled) { border-color:var(--bad); color:var(--bad); }
+  input[type=text], input[type=number], input[type=time] { background:#101010; color:var(--fg); border:1px solid var(--line); border-radius:4px; padding:7px 10px; font:inherit; color-scheme:dark; }
+  input[type=text].full { width:100%; margin-bottom:8px; }
+  input[type=number] { width:90px; }
+  select { background:#101010; color:var(--fg); border:1px solid var(--line); border-radius:4px; padding:6px 8px; font:inherit; max-width:62%; }
+  .bar { height:8px; background:#0c0c0c; border-radius:99px; overflow:hidden; margin:12px 0 6px; }
+  .bar i { display:block; height:100%; width:0; background:var(--acc); transition:width .2s; }
+  #msg { color:var(--mut); font-size:12px; min-height:18px; font-weight:600; }
+  .err { color:#f0928c; margin-top:8px; white-space:pre-wrap; }
+  .hint { color:var(--mut); font-size:12px; margin:0 0 8px; }
+  .btns { display:flex; gap:8px; flex-wrap:wrap; }
+  #console { background:#0c0c0c; border:1px solid var(--line); border-radius:4px; height:300px; overflow:auto; padding:8px 10px; font:12px/1.4 Consolas,"Cascadia Mono",monospace; white-space:pre-wrap; word-break:break-all; color:#cfcfcf; direction:ltr; text-align:left; }
+  .logrow { display:grid; grid-template-columns:150px 1fr auto; gap:10px; padding:5px 0; border-bottom:1px solid var(--line); font-size:12px; }
+  .logrow:last-child { border-bottom:0; }
+  code { background:#101010; padding:2px 6px; border-radius:3px; font-size:12px; color:#cfcfcf; direction:ltr; unicode-bidi:embed; }
+  .langs { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; }
+  .langs button { justify-content:flex-start; padding:9px 14px; border-radius:6px; }
+  .langs button.on { border-color:var(--acc); color:var(--acc); }
+  .langs button .code { margin-inline-start:auto; font-size:10px; color:var(--mut); text-transform:uppercase; }
+  [dir=rtl] .tabs, [dir=rtl] .row { direction:rtl; }
+</style>
+</head>
+<body>
+  <h1><img src="logo.png" alt=""> CFX <span>Artifacts</span></h1>
+  <div class="sub" id="path">...</div>
+
+  <div class="card" id="locate" hidden>
+    <h2><i data-lucide="folder-search"></i><span data-i18n="locate_title"></span></h2>
+    <p class="hint" data-i18n="locate_hint"></p>
+    <input type="text" class="full" id="basePath" placeholder="F:\test">
+    <button id="setBase" class="sec"><i data-lucide="check"></i><span data-i18n="locate_btn"></span></button>
+  </div>
+
+  <div id="main" hidden>
+    <div class="tabs">
+      <button class="tab on" data-tab="art"><i data-lucide="package"></i><span data-i18n="tab_art"></span></button>
+      <button class="tab" data-tab="srv"><i data-lucide="server"></i><span data-i18n="tab_srv"></span><span id="srvDot" class="badge"></span></button>
+      <button class="tab" data-tab="tasks"><i data-lucide="calendar-clock"></i><span data-i18n="tab_tasks"></span></button>
+      <button class="tab" data-tab="log"><i data-lucide="history"></i><span data-i18n="tab_log"></span></button>
+      <button class="tab" data-tab="set"><i data-lucide="settings"></i><span data-i18n="tab_set"></span></button>
+      <button class="tab" data-tab="lang"><i data-lucide="languages"></i><span data-i18n="tab_lang"></span></button>
+    </div>
+
+    <!-- ARTIFACTS -->
+    <div class="pane" id="pane-art">
+      <div class="card">
+        <h2><i data-lucide="tag"></i><span data-i18n="ver_title"></span></h2>
+        <div class="row"><span data-i18n="installed"></span><span><b id="installed">—</b> <span id="instBadge"></span></span></div>
+        <div class="row"><span data-i18n="recommended"></span><b id="recommended">—</b></div>
+        <div class="row"><span data-i18n="install"></span><select id="verSelect"></select></div>
+        <div id="selStatus" class="hint"></div>
+        <div id="verNote" class="hint"></div>
+      </div>
+
+      <div class="card">
+        <h2><i data-lucide="shield-check"></i><span data-i18n="keep_title"></span></h2>
+        <p class="hint" data-i18n="keep_hint"></p>
+        <div id="keepList"></div>
+      </div>
+
+      <div class="card">
+        <button id="update"><i data-lucide="download"></i><span data-i18n="btn_update"></span></button>
+        <div class="bar"><i id="fill"></i></div>
+        <div id="msg"></div>
+        <div class="err" id="err"></div>
+      </div>
+
+      <div class="card">
+        <h2><i data-lucide="archive"></i><span id="bkTitle"></span></h2>
+        <div id="bkList"></div>
+      </div>
+    </div>
+
+    <!-- SERVIDOR -->
+    <div class="pane" id="pane-srv" hidden>
+      <div class="card">
+        <h2><i data-lucide="activity"></i><span data-i18n="srv_title"></span></h2>
+        <div class="row"><span>FXServer.exe</span><b id="srvState">—</b></div>
+        <div class="btns" style="margin-top:8px">
+          <button id="srvStart"><i data-lucide="play"></i><span data-i18n="btn_start"></span></button>
+          <button id="srvStop" class="danger"><i data-lucide="square"></i><span data-i18n="btn_stop"></span></button>
+          <button id="txOpen"><i data-lucide="external-link"></i><span data-i18n="btn_txadmin"></span></button>
+          <button id="txShortcut" class="sec"><i data-lucide="link"></i><span data-i18n="btn_txshortcut"></span></button>
+        </div>
+        <div class="hint" id="txInfo" style="margin-top:8px"></div>
+        <div class="err" id="srvErr"></div>
+      </div>
+      <div class="card">
+        <h2><i data-lucide="terminal"></i><span data-i18n="con_title"></span></h2>
+        <div id="console"></div>
+        <p class="hint" style="margin-top:8px" data-i18n="con_hint"></p>
+      </div>
+    </div>
+
+    <!-- TAREAS -->
+    <div class="pane" id="pane-tasks" hidden>
+      <div class="card">
+        <h2><i data-lucide="calendar-clock"></i><span data-i18n="task_title"></span></h2>
+        <p class="hint" data-i18n="task_hint"></p>
+        <label class="chk"><input type="checkbox" id="taskDaily"> <span data-i18n="task_daily"></span> <input type="time" id="taskTime" value="05:00"></label>
+        <label class="chk"><input type="checkbox" id="taskLogon"> <span data-i18n="task_logon"></span></label>
+        <div class="btns" style="margin-top:8px">
+          <button id="taskCreate" class="sec"><i data-lucide="calendar-plus"></i><span data-i18n="task_create"></span></button>
+          <button id="taskDelete" class="sec danger"><i data-lucide="calendar-x"></i><span data-i18n="task_delete"></span></button>
+        </div>
+        <div class="hint" id="taskInfo" style="margin-top:8px"></div>
+        <div class="err" id="taskErr"></div>
+      </div>
+      <div class="card">
+        <h2><i data-lucide="square-terminal"></i><span data-i18n="cli_title"></span></h2>
+        <p class="hint"><code>df_artifacts.exe --update --keep chat,monitor</code></p>
+        <p class="hint"><code>df_artifacts.exe --check</code></p>
+        <p class="hint" data-i18n="cli_desc"></p>
+      </div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div class="pane" id="pane-log" hidden>
+      <div class="card">
+        <h2><i data-lucide="history"></i><span data-i18n="log_title"></span></h2>
+        <div id="logList"></div>
+      </div>
+    </div>
+
+    <!-- AJUSTES -->
+    <div class="pane" id="pane-set" hidden>
+      <div class="card">
+        <h2><i data-lucide="settings"></i><span data-i18n="set_title"></span></h2>
+        <div class="row"><span data-i18n="set_max"></span><input type="number" id="setMax" min="1" max="50"></div>
+        <div class="row"><span data-i18n="set_format"></span>
+          <select id="setFormat"><option value="auto" data-i18n="fmt_auto"></option><option value="zip">.zip</option><option value="7z">.7z</option></select></div>
+        <div class="row"><span data-i18n="set_txport"></span><input type="number" id="setTxPort" min="1" max="65535"></div>
+        <label class="chk"><input type="checkbox" id="setRestart"> <span data-i18n="set_restart"></span></label>
+        <p class="hint" style="margin-top:10px" data-i18n="set_backups"></p>
+        <input type="text" class="full" id="setBackups" placeholder="D:\backups\artifacts">
+        <p class="hint" data-i18n="set_tx"></p>
+        <input type="text" class="full" id="setTx" placeholder="F:\test\txData">
+        <div class="btns"><button id="setSave" class="sec"><i data-lucide="save"></i><span data-i18n="btn_save"></span></button></div>
+        <div class="hint" id="setInfo" style="margin-top:8px"></div>
+        <div class="err" id="setErr"></div>
+      </div>
+    </div>
+
+    <!-- IDIOMAS -->
+    <div class="pane" id="pane-lang" hidden>
+      <div class="card">
+        <h2><i data-lucide="languages"></i><span data-i18n="lang_title"></span></h2>
+        <p class="hint" data-i18n="lang_hint"></p>
+        <div class="langs" id="langList"></div>
+      </div>
+    </div>
+  </div>
+
+<script src="lucide.min.js"></script>
+<script src="i18n.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
