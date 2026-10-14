@@ -76,6 +76,42 @@ El resultado queda en `src-tauri/target/release/cfx_artifacts.exe`. Para desarro
 
 Para probar fuera de la carpeta real, la variable de entorno `CFX_BASE` fuerza la carpeta base que se escanea.
 
+## Prueba en vivo (mock de la interfaz)
+
+Puedes probar la interfaz real sin instalar nada, sin Rust y sin tocar ningún servidor: `test/` carga `ui/` con un **backend simulado** (mock) que imita actualizaciones, backups, consola del servidor, tareas y errores.
+
+**Demo online:** <https://dfntk.github.io/CFX-Artifacts/test/>
+(requiere GitHub Pages activado: Settings → Pages → Source: `main` / carpeta `/ (root)`).
+
+**En local:**
+
+```bash
+npm run mock
+```
+
+y abre <http://localhost:8765/test/>. Hace falta servirlo por HTTP; no funciona abriendo el archivo con `file://`.
+
+La barra superior de la página de prueba cambia de escenario (también se pueden usar parámetros en la URL):
+
+| Escenario | URL |
+|---|---|
+| Por defecto | `/test/` |
+| Hay una nueva versión de la app | `/test/?appupdate=1` |
+| Servidor en marcha (consola con colores) | `/test/?server=1` |
+| Sin versión instalada | `/test/?noversion=1` |
+| Falla la descarga | `/test/?fail=update` |
+| Falla restaurar un backup | `/test/?fail=restore` |
+| No se encuentra la carpeta de artifacts | `/test/?nofolder=1` |
+| Idioma (cualquiera de los 14) | `/test/?lang=ar` |
+
+### Comprobaciones automáticas de la interfaz
+
+```bash
+npm test
+```
+
+Sin dependencias. Comprueba que los 14 idiomas tienen las mismas claves y marcadores (`{0}`, `{1}`), que cada `id` que usa `app.js` existe en `index.html`, que todas las claves de traducción usadas existen, que cada etapa de progreso y código de error del backend tiene su traducción, que la lista de idiomas de `main.rs` coincide con la de la interfaz y que el mock cubre todos los comandos que invoca la interfaz.
+
 ## Estructura del proyecto
 
 ```
@@ -91,6 +127,11 @@ ui/
 ├── splash.html          Pantalla de carga
 ├── lucide.min.js        Iconos (Lucide)
 └── logo.png             Logo
+test/
+├── index.html           Página de prueba en vivo (carga ui/ con el mock)
+├── mock-tauri.js        Backend simulado
+├── serve.mjs            Servidor estático para `npm run mock`
+└── check.mjs            Comprobaciones automáticas (`npm test`)
 icon-src.png             Icono original de la app
 ```
 

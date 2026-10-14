@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CFX Artifacts – live UI mock</title>
+<style>
+  :root { --bg:#161616; --fg:#f2f2f2; --mut:#9a9a9a; --acc:#67b346; --line:#2c2c2c; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:13px/1.45 "Segoe UI",system-ui,sans-serif; display:flex; flex-direction:column; height:100vh; }
+  header { padding:10px 16px; border-bottom:1px solid var(--line); display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; }
+  header b { color:var(--acc); }
+  header span.note { color:var(--mut); font-size:12px; }
+  nav { display:flex; flex-wrap:wrap; gap:6px; }
+  nav a { color:var(--fg); text-decoration:none; border:1px solid #444; border-radius:99px; padding:3px 12px; font-size:12px; }
+  nav a:hover, nav a.on { border-color:var(--acc); color:var(--acc); }
+  main { flex:1; display:flex; justify-content:center; padding:14px; min-height:0; }
+  iframe { width:100%; max-width:820px; height:100%; border:1px solid var(--line); border-radius:8px; background:#202020; }
+  .err { color:#f0928c; padding:20px; }
+</style>
+</head>
+<body>
+<header>
+  <b>CFX Artifacts – live UI mock</b>
+  <nav id="nav"></nav>
+  <span class="note">Interface real (<code>ui/</code>) con un backend simulado: no se descarga ni se toca nada.</span>
+</header>
+<main><iframe id="app" title="CFX Artifacts UI"></iframe></main>
+
+<script>
+const SCENARIOS = [
+  ['Default', ''],
+  ['Nueva versión de la app', '?appupdate=1'],
+  ['Servidor en marcha', '?server=1'],
+  ['Sin versión instalada', '?noversion=1'],
+  ['Falla la descarga', '?fail=update'],
+  ['Falla restaurar', '?fail=restore'],
+  ['Carpeta no encontrada', '?nofolder=1'],
+  ['English', '?lang=en'],
+  ['العربية (RTL)', '?lang=ar'],
+  ['日本語', '?lang=ja'],
+];
+const params = Object.fromEntries(new URLSearchParams(location.search));
+const nav = document.getElementById('nav');
+for (const [label, q] of SCENARIOS) {
+  const a = document.createElement('a');
+  a.href = location.pathname + q;
+  a.textContent = label;
+  if (q === (location.search || '')) a.className = 'on';
+  nav.appendChild(a);
+}
+
+(async () => {
+  const frame = document.getElementById('app');
+  try {
+    const uiBase = new URL('../ui/', location.href).href;
+    const [html, mock] = await Promise.all([
+      fetch(uiBase + 'index.html').then((r) => { if (!r.ok) throw new Error('ui/index.html: ' + r.status); return r.text(); }),
+      fetch('mock-tauri.js').then((r) => { if (!r.ok) throw new Error('mock-tauri.js: ' + r.status); return r.text(); }),
+    ]);
+    const inject = `<base href="${uiBase}"><script>window.__MOCK_PARAMS=${JSON.stringify(params)};<\/script><script>${mock.replace(/<\/script/g, '<\\/script')}<\/script>`;
+    frame.srcdoc = html.replace('<head>', '<head>' + inject);
+  } catch (e) {
+    document.querySelector('main').innerHTML = '<div class="err">Could not load the UI: ' + e.message +
+      '<br>Serve the repository over HTTP (e.g. <code>npx serve .</code>) and open <code>/test/</code>. It does not work from file://.</div>';
+  }
+})();
+</script>
+</body>
+</html>
