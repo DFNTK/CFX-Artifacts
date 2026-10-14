@@ -1,0 +1,23 @@
+[package]
+name = "df_artifacts"
+version = "1.0.0"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+futures-util = "0.3.34"
+reqwest = { version = "0.13.5", default-features = false, features = ["rustls", "json", "stream"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+sevenz-rust2 = "0.24.0"
+sysinfo = { version = "0.39.6", default-features = false, features = ["system"] }
+tauri = { version = "2", features = [] }
+tokio = { version = "1.53.3", features = ["rt-multi-thread", "macros", "fs", "io-util"] }
+zip = "9.0.3"
+
+[profile.release]
+opt-level = "s"
+lto = true
+strip = true
